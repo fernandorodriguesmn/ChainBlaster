@@ -22,6 +22,22 @@ const int SCREEN_W = 960; //largura da tela
 const int SCREEN_H = 540; //altura da tela
 const int HERO_W = 30; 
 const int HERO_H = 40;
+//limites da tela
+const int limit_y_up = 0;
+const int limit_x_left = 0;
+const int limit_y_down = SCREEN_H;
+const int limit_x_right = SCREEN_W; 
+
+/*
+gcc chain.c -o chain_completo.exe \
+$(pkg-config --cflags --libs \
+allegro-5 \
+allegro_font-5 \
+allegro_ttf-5 \
+allegro_primitives-5 \
+allegro_image-5) \
+-lm
+*/
 
 
 
@@ -278,7 +294,7 @@ int main(int argc, char **argv){
 			switch(ev.keyboard.keycode) {
 			//se a tecla for o W
 				case ALLEGRO_KEY_W:
-					Hero.dir_y--;
+						Hero.dir_y--;
 				break;
 
 				case ALLEGRO_KEY_S:

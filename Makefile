@@ -1,30 +1,22 @@
-CC = gcc
+ALLEGRO_VERSION=5.0.10
+MINGW_VERSION=4.7.0
+FOLDER=C:
 
-CFLAGS = -Wall $(shell pkg-config --cflags \
-	allegro-5 \
-	allegro_font-5 \
-	allegro_ttf-5 \
-	allegro_primitives-5 \
-	allegro_image-5)
+FOLDER_NAME=\allegro-$(ALLEGRO_VERSION)-mingw-$(MINGW_VERSION)
+PATH_ALLEGRO=$(FOLDER)$(FOLDER_NAME)
+LIB_ALLEGRO=\lib\liballegro-$(ALLEGRO_VERSION)-monolith-mt.a
+INCLUDE_ALLEGRO=\include
 
-LIBS = $(shell pkg-config --libs \
-	allegro-5 \
-	allegro_font-5 \
-	allegro_ttf-5 \
-	allegro_primitives-5 \
-	allegro_image-5) \
-	-lm
+all: chain.exe
 
-TARGET = chain
-SRC = chain.c
+chain.exe: chain.o
+	gcc -o chain.exe chain.o $(PATH_ALLEGRO)$(LIB_ALLEGRO)
 
-all: $(TARGET)
+chain.o: chain.c
+	gcc -I $(PATH_ALLEGRO)$(INCLUDE_ALLEGRO) -c chain.c		
 
-$(TARGET): $(SRC)
-	$(CC) $(SRC) -o $(TARGET) $(CFLAGS) $(LIBS)
-
-run: $(TARGET)
-	./$(TARGET)
-
+	
+	
 clean:
-	rm -f $(TARGET)
+	del chain.o 
+	del chain.exe
