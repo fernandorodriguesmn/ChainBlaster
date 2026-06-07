@@ -16,17 +16,12 @@
 #define BORDA_TIRO 4
 #define SCORE_PENALTY 0.3
 
-const float FPS = 100;  
+const float FPS = 60;  
 
 const int SCREEN_W = 960; //largura da tela
 const int SCREEN_H = 540; //altura da tela
 const int HERO_W = 30; 
 const int HERO_H = 40;
-//limites da tela
-const int limit_y_up = 0;
-const int limit_x_left = 0;
-const int limit_y_down = SCREEN_H;
-const int limit_x_right = SCREEN_W; 
 
 /*
 gcc chain.c -o chain_completo.exe \
@@ -146,6 +141,23 @@ void updateHero(Hero *s) {
 	s->ship.x += s->dir_x * s->ship.vel;
 
 	s->ship.y += s->dir_y * s->ship.vel;
+
+	//limitar o Hero dentro dos limites da tela
+	if(s->ship.x >= SCREEN_W - HERO_W){
+		s->ship.x = SCREEN_W - HERO_W;
+	}
+
+	if(s->ship.x <= 0 + HERO_W){
+		s->ship.x = 0 + HERO_W;
+	}
+
+	if(s->ship.y >= SCREEN_H - HERO_H/2){
+		s->ship.y = SCREEN_H - HERO_H/2 - 10;
+	}
+
+	if(s->ship.y <= 0 + HERO_H/2){
+		s->ship.y = 0 + HERO_H/2;
+	}
 
 	if(s->ship.tiro.modo != TIRO_ATIVO) {
 		s->ship.tiro.x = s->ship.x;
@@ -290,25 +302,25 @@ int main(int argc, char **argv){
 		else if(ev.type == ALLEGRO_EVENT_KEY_DOWN) {
 			//imprime qual tecla foi
 			//printf("\ncodigo tecla: %d", ev.keyboard.keycode);
-
 			switch(ev.keyboard.keycode) {
 			//se a tecla for o W
 				case ALLEGRO_KEY_W:
 						Hero.dir_y--;
 				break;
+					
 
 				case ALLEGRO_KEY_S:
-					Hero.dir_y++;
+						Hero.dir_y++;
 				break;
 
 				case ALLEGRO_KEY_A:
-					Hero.dir_x--;
+						Hero.dir_x--;
 				break;
 
 				case ALLEGRO_KEY_D:
-					Hero.dir_x++;
+						Hero.dir_x++;
 				break;	
-
+					
 				case ALLEGRO_KEY_SPACE:
 					if(Hero.ship.tiro.modo == TIRO_INATIVO) {
 						Hero.ship.tiro.modo = TIRO_ATIVO;
