@@ -22,6 +22,8 @@ const int SCREEN_W = 960; //largura da tela
 const int SCREEN_H = 540; //altura da tela
 const int HERO_W = 30; 
 const int HERO_H = 40;
+const int ENEMEY_W = 20;
+const int ENEMY_H = 25;
 
 /*
 gcc chain.c -o chain_completo.exe \
@@ -93,7 +95,6 @@ void initGlobals() {
 
 
 
-
 void initHero(Hero *s) {
 
 	s->score = 0;
@@ -104,6 +105,25 @@ void initHero(Hero *s) {
 	s->dir_x = 0;
 	s->dir_y = 0;
 	initTiro(&s->ship);
+
+}
+
+void initEnemy(Enemy e[]) {
+
+	for(int i = 0; i < NUM_ENEMIES; i++)
+		e[i].ship.cor = al_map_rgb(11, 238, 70);
+
+	for(int i = 0, j = 0; i < NUM_ENEMIES/2; i++, j += 20){
+		e[i].ship.x = 40 + j;
+		e[i].ship.y = 40 + j;
+	}
+	
+	for(int i = NUM_ENEMIES/2, j = 0; i < NUM_ENEMIES; i++, j += 20){
+		e[i].ship.x = SCREEN_W - 40 - j;
+		e[i].ship.y = 40 + j;
+	}
+
+	e->ship.vel = 1;
 
 }
 
@@ -128,6 +148,13 @@ void drawHero(Hero s) {
 
 	al_draw_circle(s.ship.tiro.x, s.ship.tiro.y, s.ship.tiro.raio, s.ship.tiro.cor, BORDA_TIRO);
 
+
+}
+
+void drawEnemy(Enemy e[]) {
+
+	for(int i = 0; i<NUM_ENEMIES; i++)
+		al_draw_filled_triangle(e[i].ship.x, e[i].ship.y, e[i].ship.x - ENEMEY_W/2, e[i].ship.y - ENEMY_H, e[i].ship.x + ENEMEY_W/2, e[i].ship.y - ENEMY_H, e[i].ship.cor);
 
 }
 
@@ -169,6 +196,12 @@ void updateHero(Hero *s) {
 		else
 			initTiro(&s->ship);
 	}
+
+}
+
+void updateEnemy(Enemy *e) {
+
+	
 
 }
 
@@ -264,8 +297,9 @@ int main(int argc, char **argv){
 
 
 	//cria os inimigos:
-
-
+	Enemy enemy[NUM_ENEMIES];
+	initEnemy(enemy);
+	
 	//inicia o temporizador
 	al_start_timer(timer);
 	
@@ -283,7 +317,7 @@ int main(int argc, char **argv){
 			updateHero(&Hero);
 
 			drawHero(Hero);
-
+			drawEnemy(enemy);
 
 			//atualiza a tela (quando houver algo para mostrar)
 			al_flip_display();
