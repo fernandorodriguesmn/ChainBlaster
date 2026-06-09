@@ -51,7 +51,7 @@ typedef struct Tiro {
 
 typedef struct Ship {
 	int x, y;
-	int vel;	
+	float vel;	
 	ALLEGRO_COLOR cor;
 	Tiro tiro;
 } Ship;
@@ -69,6 +69,8 @@ typedef struct Enemy {
 
 	Ship ship;
 	float raio;
+	int dir_x;
+	int dir_y;
 	int active;
 
 } Enemy;
@@ -101,7 +103,7 @@ void initHero(Hero *s) {
 	s->ship.cor = al_map_rgb(100 + rand()%156, 100 + rand()%156, 100 + rand()%156);
 	s->ship.x = SCREEN_W/2;
 	s->ship.y = SCREEN_H - HERO_H - 10;
-	s->ship.vel = 2;
+	s->ship.vel = 3;
 	s->dir_x = 0;
 	s->dir_y = 0;
 	initTiro(&s->ship);
@@ -110,8 +112,12 @@ void initHero(Hero *s) {
 
 void initEnemy(Enemy e[]) {
 
-	for(int i = 0; i < NUM_ENEMIES; i++)
+	for(int i = 0; i < NUM_ENEMIES; i++){
 		e[i].ship.cor = al_map_rgb(11, 238, 70);
+		e[i].ship.vel = 0.15;
+		e[i].dir_x = 0;
+		e[i].dir_y = 0;
+	}
 
 	for(int i = 0, j = 0; i < NUM_ENEMIES/2; i++, j += 20){
 		e[i].ship.x = 40 + j;
@@ -122,8 +128,6 @@ void initEnemy(Enemy e[]) {
 		e[i].ship.x = SCREEN_W - 40 - j;
 		e[i].ship.y = 40 + j;
 	}
-
-	e->ship.vel = 1;
 
 }
 
@@ -199,11 +203,34 @@ void updateHero(Hero *s) {
 
 }
 
-void updateEnemy(Enemy *e) {
+void updateEnemy(Enemy e[], Hero *s) {
 
-	
+	for(int i = 0; i < NUM_ENEMIES; i++){
+		if(e[i].ship.x - s->ship.x < 0)
+			e[i].dir_x++;
+		else 
+			e[i].dir_x--;
+
+		if(e[i].ship.y - s->ship.y < 0)
+			e[i].dir_y++;
+		else 
+			e[i].dir_y--;
+
+		e[i].ship.x += e[i].dir_x * e[i].ship.vel;
+		e[i].ship.y += e[i].dir_y * e[i].ship.vel;
+	}
 
 }
+
+
+/*void Dead(Enemy e[], Hero s, int *p){
+	
+for(int i = 0; i < NUM_ENEMIES; i++){
+	if(e[i].ship.x == s.ship.x && e[i].ship.y == s.ship.y)
+		*p = 0;
+}
+
+}*/
 
 
  
@@ -315,6 +342,7 @@ int main(int argc, char **argv){
 
 			drawScenario(Hero);
 			updateHero(&Hero);
+			updateEnemy(enemy, &Hero);
 
 			drawHero(Hero);
 			drawEnemy(enemy);
