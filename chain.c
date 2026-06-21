@@ -12,9 +12,12 @@
 #define TIRO_INATIVO 0
 #define TIRO_ATIVO 1
 #define RAIO_TIRO 100
+#define RAIO_TIRO_ENEMY 50
 #define TEMPO_TIRO 2.0
 #define BORDA_TIRO 4
 #define SCORE_PENALTY 0.3
+#define ATIVO 1
+#define INATIVO 0
 
 const float FPS = 60;  
 
@@ -22,7 +25,7 @@ const int SCREEN_W = 960; //largura da tela
 const int SCREEN_H = 540; //altura da tela
 const int HERO_W = 30; 
 const int HERO_H = 40;
-const int ENEMEY_W = 20;
+const int ENEMY_W = 20;
 const int ENEMY_H = 25;
 
 /*
@@ -110,13 +113,15 @@ void initHero(Hero *s) {
 
 }
 
-void initEnemy(Enemy e[]) {
-
+void initEnemy(Enemy *e) {
+	srand(time(NULL));
+	
 	for(int i = 0; i < NUM_ENEMIES; i++){
 		e[i].ship.cor = al_map_rgb(11, 238, 70);
 		e[i].ship.vel = 0.15;
 		e[i].dir_x = 0;
 		e[i].dir_y = 0;
+		e[i].active = ATIVO;
 	}
 
 	for(int i = 0, j = 0; i < NUM_ENEMIES/2; i++, j += 20){
@@ -158,7 +163,7 @@ void drawHero(Hero s) {
 void drawEnemy(Enemy e[]) {
 
 	for(int i = 0; i<NUM_ENEMIES; i++)
-		al_draw_filled_triangle(e[i].ship.x, e[i].ship.y, e[i].ship.x - ENEMEY_W/2, e[i].ship.y - ENEMY_H, e[i].ship.x + ENEMEY_W/2, e[i].ship.y - ENEMY_H, e[i].ship.cor);
+		al_draw_filled_triangle(e[i].ship.x, e[i].ship.y, e[i].ship.x - ENEMY_W/2, e[i].ship.y - ENEMY_H, e[i].ship.x + ENEMY_W/2, e[i].ship.y - ENEMY_H, e[i].ship.cor);
 
 }
 
@@ -204,34 +209,76 @@ void updateHero(Hero *s) {
 }
 
 void updateEnemy(Enemy e[], Hero *s) {
-
+	
 	for(int i = 0; i < NUM_ENEMIES; i++){
-		if(e[i].ship.x - s->ship.x < 0)
-			e[i].dir_x++;
-		else 
-			e[i].dir_x--;
+		if(e[i].active == ATIVO){
+			if(e[i].ship.x - s->ship.x < 0)
+				e[i].dir_x++;
+			else 
+				e[i].dir_x--;
 
-		if(e[i].ship.y - s->ship.y < 0)
-			e[i].dir_y++;
-		else 
-			e[i].dir_y--;
+			if(e[i].ship.y - s->ship.y < 0)
+				e[i].dir_y++;
+			else 
+				e[i].dir_y--;
 
-		e[i].ship.x += e[i].dir_x * e[i].ship.vel;
-		e[i].ship.y += e[i].dir_y * e[i].ship.vel;
+			if(e[i].ship.tiro.modo != TIRO_ATIVO){
+				e[i].ship.tiro.x = e[i].ship.x;
+				e[i].ship.tiro.y = e[i].ship.y;
+			}
+			else{
+				initTiro(&e[i].ship);
+			}
+
+			e[i].ship.x += e[i].dir_x * e[i].ship.vel;
+			e[i].ship.y += e[i].dir_y * e[i].ship.vel;
+		}	
 	}
 
 }
 
 
-/*void Dead(Enemy e[], Hero s, int *p){
+void DeadHero(Enemy e[], Hero s, int *p){
 	
-for(int i = 0; i < NUM_ENEMIES; i++){
-	if(e[i].ship.x == s.ship.x && e[i].ship.y == s.ship.y)
-		*p = 0;
+	for(int i = 0; i < NUM_ENEMIES; i++){
+		if(e[i].active == ATIVO){
+			if((e[i].ship.x == s.ship.x && e[i].ship.y == s.ship.y)
+			|| (e[i].ship.x - HERO_W/2 >= s.ship.x - ENEMY_W/2 && e[i].ship.x + HERO_W/2 <= s.ship.x + ENEMY_W/2 && e[i].ship.y - s.ship.y == HERO_H + ENEMY_H)
+			|| (e[i].ship.y >= s.ship.y && e[i].ship.y <= s.ship.y + HERO_H && e[i].ship.x + ENEMY_W/2 >= s.ship.x - HERO_W/2 && e[i].ship.x + ENEMY_W/2 <= s.ship.x + HERO_W/2 )
+			|| (e[i].ship.y >= s.ship.y && e[i].ship.y <= s.ship.y + HERO_H && e[i].ship.x - ENEMY_W/2 >= s.ship.x - HERO_W/2 && e[i].ship.x - ENEMY_W/2 <= s.ship.x + HERO_W/2))
+				*p = 0;
+		}	
+	}
+
 }
 
-}*/
 
+void DeadEnmy(Hero s, Enemy e[]){
+	if(s.ship.tiro.modo == TIRO_ATIVO){
+		for(int i = 0; i < NUM_ENEMIES; i++){
+			if((e[i].ship.x - s.ship.tiro.x)*(e[i].ship.x - s.ship.tiro.x) + (e[i].ship.y - s.ship.tiro.y)*(e[i].ship.y - s.ship.tiro.y) <= s.ship.tiro.raio*s.ship.tiro.raio){
+				e[i].active = INATIVO;
+				e[i].ship.cor = BKG_COLOR;
+				e[i].ship.x = 0;
+				e[i].ship.y = 0;
+				e[i].ship.tiro.modo = TIRO_ATIVO;
+				e[i].ship.tiro.raio = RAIO_TIRO_ENEMY;
+			}
+		}
+	}
+}
+
+void Nextround(Enemy e[]){
+	int cont = 0;
+	for(int i = 0; i < NUM_ENEMIES; i++){
+		if(e[i].active == INATIVO)
+			cont++;
+	}
+	if(cont == NUM_ENEMIES){
+		initEnemy(e);
+	}
+
+}
 
  
 int main(int argc, char **argv){
@@ -346,6 +393,11 @@ int main(int argc, char **argv){
 
 			drawHero(Hero);
 			drawEnemy(enemy);
+
+			//playing = 0, quando Hero colide com Enemy
+			DeadHero(enemy, Hero, &playing);
+			DeadEnmy(Hero, enemy);
+			Nextround(enemy);
 
 			//atualiza a tela (quando houver algo para mostrar)
 			al_flip_display();
