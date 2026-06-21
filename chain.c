@@ -85,7 +85,7 @@ void initTiro(Ship *s) {
 
 	s->tiro.x = s->x;
 	s->tiro.y = s->y;
-	s->tiro.raio = 3;
+	s->tiro.raio = 1;
 	s->tiro.cor = s->cor;
 	s->tiro.timer = TEMPO_TIRO;
 	s->tiro.modo = TIRO_INATIVO;
@@ -231,13 +231,18 @@ void updateEnemy(Enemy e[], Hero *s) {
 				e[i].ship.tiro.x = e[i].ship.x;
 				e[i].ship.tiro.y = e[i].ship.y;
 			}
+		}
 			else{
-				initTiro(&e[i].ship);
+				if(e[i].ship.tiro.timer > 0)
+					e[i].ship.tiro.timer -= 1.0/FPS;
+				else{
+					e[i].ship.tiro.modo = TIRO_INATIVO;
+					e[i].ship.tiro.raio = 0;
+				}
 			}
 
 			//e[i].ship.x += e[i].dir_x * e[i].ship.vel;
-			//e[i].ship.y += e[i].dir_y * e[i].ship.vel;
-		}	
+			//e[i].ship.y += e[i].dir_y * e[i].ship.vel;	
 	}
 
 }
