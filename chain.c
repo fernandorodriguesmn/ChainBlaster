@@ -122,6 +122,7 @@ void initEnemy(Enemy *e) {
 		e[i].dir_x = 0;
 		e[i].dir_y = 0;
 		e[i].active = ATIVO;
+		initTiro(&e[i].ship);
 	}
 
 	for(int i = 0, j = 0; i < NUM_ENEMIES/2; i++, j += 20){
@@ -162,8 +163,10 @@ void drawHero(Hero s) {
 
 void drawEnemy(Enemy e[]) {
 
-	for(int i = 0; i<NUM_ENEMIES; i++)
+	for(int i = 0; i<NUM_ENEMIES; i++){
 		al_draw_filled_triangle(e[i].ship.x, e[i].ship.y, e[i].ship.x - ENEMY_W/2, e[i].ship.y - ENEMY_H, e[i].ship.x + ENEMY_W/2, e[i].ship.y - ENEMY_H, e[i].ship.cor);
+		al_draw_circle(e[i].ship.tiro.x, e[i].ship.tiro.y, e[i].ship.tiro.raio, e[i].ship.tiro.cor, BORDA_TIRO);
+	}
 
 }
 
@@ -256,13 +259,16 @@ void DeadHero(Enemy e[], Hero s, int *p){
 void DeadEnmy(Hero s, Enemy e[]){
 	if(s.ship.tiro.modo == TIRO_ATIVO){
 		for(int i = 0; i < NUM_ENEMIES; i++){
-			if((e[i].ship.x - s.ship.tiro.x)*(e[i].ship.x - s.ship.tiro.x) + (e[i].ship.y - s.ship.tiro.y)*(e[i].ship.y - s.ship.tiro.y) <= s.ship.tiro.raio*s.ship.tiro.raio){
-				e[i].active = INATIVO;
-				e[i].ship.cor = BKG_COLOR;
-				e[i].ship.x = 0;
-				e[i].ship.y = 0;
-				e[i].ship.tiro.modo = TIRO_ATIVO;
-				e[i].ship.tiro.raio = RAIO_TIRO_ENEMY;
+			for(int j = 0; j < NUM_ENEMIES; j++){
+				if((e[i].ship.x - s.ship.tiro.x)*(e[i].ship.x - s.ship.tiro.x) + (e[i].ship.y - s.ship.tiro.y)*(e[i].ship.y - s.ship.tiro.y) <= (s.ship.tiro.raio*s.ship.tiro.raio) ||
+				(e[j].ship.tiro.modo == ATIVO && (e[i].ship.x - e[j].ship.tiro.x)*(e[i].ship.x - e[j].ship.tiro.x) + (e[i].ship.y - e[j].ship.tiro.y)*(e[i].ship.y - e[j].ship.tiro.y) <= (e[j].ship.tiro.raio*e[j].ship.tiro.raio))){
+					e[i].active = INATIVO;
+					e[i].ship.cor = BKG_COLOR;
+					e[i].ship.x = 0;
+					e[i].ship.y = 0;
+					e[i].ship.tiro.modo = TIRO_ATIVO;
+					e[i].ship.tiro.raio = RAIO_TIRO_ENEMY;
+				}
 			}
 		}
 	}
