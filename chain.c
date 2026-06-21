@@ -118,7 +118,7 @@ void initEnemy(Enemy *e) {
 	
 	for(int i = 0; i < NUM_ENEMIES; i++){
 		e[i].ship.cor = al_map_rgb(11, 238, 70);
-		e[i].ship.vel = 0.15;
+		e[i].ship.vel = rand()%4 + 2;
 		e[i].dir_x = 0;
 		e[i].dir_y = 0;
 		e[i].active = ATIVO;
@@ -218,14 +218,14 @@ void updateEnemy(Enemy e[], Hero *s) {
 	for(int i = 0; i < NUM_ENEMIES; i++){
 		if(e[i].active == ATIVO){
 			if(e[i].ship.x - s->ship.x < 0)
-				e[i].dir_x++;
-			else 
-				e[i].dir_x--;
+				e[i].ship.x += e[i].ship.vel;
+			if(e[i].ship.x - s->ship.x > 0)
+				e[i].ship.x -= e[i].ship.vel;
 
 			if(e[i].ship.y - s->ship.y < 0)
-				e[i].dir_y++;
-			else 
-				e[i].dir_y--;
+				e[i].ship.y += e[i].ship.vel;
+			if(e[i].ship.y - s->ship.y > 0)
+				e[i].ship.y -= e[i].ship.vel;
 
 			if(e[i].ship.tiro.modo != TIRO_ATIVO){
 				e[i].ship.tiro.x = e[i].ship.x;
@@ -235,8 +235,8 @@ void updateEnemy(Enemy e[], Hero *s) {
 				initTiro(&e[i].ship);
 			}
 
-			e[i].ship.x += e[i].dir_x * e[i].ship.vel;
-			e[i].ship.y += e[i].dir_y * e[i].ship.vel;
+			//e[i].ship.x += e[i].dir_x * e[i].ship.vel;
+			//e[i].ship.y += e[i].dir_y * e[i].ship.vel;
 		}	
 	}
 
