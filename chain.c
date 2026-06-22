@@ -71,10 +71,9 @@ typedef struct Enemy {
 
 	Ship ship;
 	float raio;
-	int dir_x;
-	int dir_y;
 	int active;
 	int w, h;
+	int score;
 
 } Enemy;
 
@@ -119,11 +118,10 @@ void initEnemy(Enemy *e) {
 	for(int i = 0; i < NUM_ENEMIES; i++){
 		e[i].ship.cor = al_map_rgb(11, 238, 70);
 		e[i].ship.vel = rand()%4 + 2;
-		e[i].dir_x = 0;
-		e[i].dir_y = 0;
 		e[i].active = ATIVO;
 		e[i].w = rand()%21 + 20;
 		e[i].h = e[i].w;
+		e[i].score = 0;
 		initTiro(&e[i].ship);
 	}
 
@@ -240,9 +238,6 @@ void updateEnemy(Enemy e[], Hero *s) {
 					e[i].ship.tiro.raio = 0;
 				}
 			}
-
-			//e[i].ship.x += e[i].dir_x * e[i].ship.vel;
-			//e[i].ship.y += e[i].dir_y * e[i].ship.vel;	
 	}
 
 }
@@ -275,6 +270,7 @@ void DeadEnmy(Hero s, Enemy e[]){
 					e[i].ship.y = 0;
 					e[i].ship.tiro.modo = TIRO_ATIVO;
 					e[i].ship.tiro.raio = e[i].w;
+					e[i].score = 1;
 				}
 			}
 		}
@@ -291,6 +287,16 @@ void Nextround(Enemy e[]){
 		initEnemy(e);
 	}
 
+}
+
+void Scoresystm(Hero *s, Enemy e[]){
+	s->score -= 10*(1.0/FPS);
+	for(int i = 0; i < NUM_ENEMIES; i++){
+		if(e[i].score == 1){
+			s->score += e[i].w*0.1;
+			e[i].score = 0; 
+		}
+	}
 }
 
  
@@ -408,8 +414,9 @@ int main(int argc, char **argv){
 			drawEnemy(enemy);
 
 			//playing = 0, quando Hero colide com Enemy
-			DeadHero(enemy, Hero, &playing);
 			DeadEnmy(Hero, enemy);
+			DeadHero(enemy, Hero, &playing);
+			Scoresystm(&Hero, enemy);
 			Nextround(enemy);
 
 			//atualiza a tela (quando houver algo para mostrar)
@@ -489,11 +496,42 @@ int main(int argc, char **argv){
 		}
 
 	} //fim do while
-     
+    
+	FILE *arq = fopen("score.txt", "r");
+	float scr = 0.0;
+	if(arq == NULL){
+		FILE *arqw = fopen("score.txt", "w");
+		fprintf(arqw, "%d", (int)Hero.score);
+		fclose(arqw);
+	}else{
+		fscanf(arq, "%f", &scr);
+		fclose(arq);
+		if(Hero.score > scr){
+			char text[50];
+			al_clear_to_color(al_map_rgb(0,0,0));
+			sprintf(text, "NOVO RECORDE: %d", (int)Hero.score);
+			al_draw_text(FONT_32, al_map_rgb(220, 30, 0), SCREEN_W/3, SCREEN_H/2 + 50, 0, text);
+			al_flip_display();
+			al_rest(2);
+
+			arq = fopen("score.txt", "w");
+			fprintf(arq, "%d", (int)Hero.score);
+			fclose(arq);
+		}
+		else{
+			char text[50];
+			al_clear_to_color(al_map_rgb(0,0,0));
+			sprintf(text, "RECORDE ATUAL: %d", (int)scr);
+			al_draw_text(FONT_32, al_map_rgb(220, 30, 0), SCREEN_W/3, SCREEN_H/2 + 50, 0, text);
+			al_flip_display();
+			al_rest(2);
+		}
+	}
+
 	//procedimentos de fim de jogo (fecha a tela, limpa a memoria, etc)
 	
-
-		char my_text[100];
+		
+		char my_text[100], my_text2[100];
 		al_clear_to_color(al_map_rgb(0,0,0));
 	 	sprintf(my_text, "Pontuação: %d", (int)Hero.score);
 		al_draw_text(FONT_32, al_map_rgb(220, 30, 0), SCREEN_W/3, SCREEN_H/2 + 50, 0, my_text);
